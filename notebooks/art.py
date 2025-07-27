@@ -252,10 +252,14 @@ plot_decoder_norm_diff(
     figsize=figsize,
 )
 
-# %%
-
 
 # %%
+"""
+========================
+Chat specific latents count (crosscoders, recon and error ratios)
+========================
+"""
+
 df_cc = load_latent_df("gemma-2-2b-crosscoder-l13-mu4.1e-02-lr1e-04")
 df_cc = df_cc[df_cc["tag"] == "IT only"]
 df_topk = load_latent_df("gemma-2-2b-L13-k100-lr1e-04-local-shuffling-CCLoss")
@@ -266,9 +270,7 @@ df_topk_decoupled = load_latent_df(
 )
 df_topk_decoupled = df_topk_decoupled.sort_values(by="dec_norm_diff", ascending=True)
 df_topk_decoupled = df_topk_decoupled.iloc[: len(df_cc)]
-sae_df = load_latent_df("SAE-chat-gemma-2-2b-L13-k100-lr1e-04-local-shuffling")
 
-# %%
 # Create line plot showing number of latents vs threshold
 plt.figure(figsize=(7, 2.3))
 
@@ -329,13 +331,16 @@ sae_df = load_latent_df("SAE-chat-gemma-2-2b-L13-k100-lr1e-04-local-shuffling")
 sae_diff_df = load_latent_df(
     "SAE-difference-gemma-2-2b-L13-k100-lr1e-04-local-shuffling"
 )
+base_sae_df = load_latent_df(
+    "SAE-base-gemma-2-2b-L13-k100-x32-lr1e-04-local-shuffling"
+)
 # %%
 green = "limegreen"
 
 thresholds = np.linspace(0, 1, 100)
-dfs = [df_cc, df_topk_decoupled, sae_df, sae_diff_df]
+dfs = [df_cc, df_topk_decoupled, sae_df, base_sae_df, sae_diff_df]
 counts = [[] for _ in range(len(dfs))]
-names = ["L1 Crosscoder", "BatchTopK Crosscoder", "chat SAE", "diff-SAE"]
+names = ["L1 Crosscoder", "BatchTopK Crosscoder", "chat SAE", "base SAE", "diff-SAE"]
 
 for t in thresholds:
     for i, df in enumerate(dfs):
@@ -1558,5 +1563,3 @@ plt.tight_layout()
 plt.savefig(Path("results") / "decoder_norm_diff.pdf", bbox_inches="tight")
 
 plt.show()
-
-
