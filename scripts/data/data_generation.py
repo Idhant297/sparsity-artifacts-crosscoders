@@ -50,7 +50,7 @@ def setup_model(
 
 def filter_dataset(dataset, tokenizer, max_text_length=1024, min_response_length=128):
     """Filter dataset based on text length constraints."""
-    toks = tokenizer.apply_chat_template(dataset, add_generation_prompt=True)
+    toks = tokenizer.apply_chat_template(list(dataset), add_generation_prompt=True)
     return [
         prompt
         for prompt, tok in zip(dataset, toks)
@@ -181,6 +181,7 @@ def generate_dataset_responses(
     dataset_name: str,
     dataset_split: str = "test_sft",
     gen_column_name: str = "messages",
+    dataset_column_name: str = "messages",
     to_generate_tokens: int = 200_000,
     batch_size: int = 64,
     max_length: int = 1024,
@@ -203,7 +204,7 @@ def generate_dataset_responses(
         print("No dataset specified, please provide --dataset_name")
         return
 
-    raw_dataset = load_dataset(dataset_name)[dataset_split]["messages"]
+    raw_dataset = load_dataset(dataset_name)[dataset_split][dataset_column_name]
     print(f"Loaded dataset: {dataset_name}, split: {dataset_split}")
 
     filtered_dataset = filter_dataset(
@@ -272,7 +273,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--dataset-name",
         type=str,
-        default="science-of-finetuning/ultrachat_200k_generated",
+        default="HuggingFaceH4/ultrachat_200k",
         help="Dataset name to load",
     )
     parser.add_argument(
@@ -280,6 +281,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--gen-column-name",
+        type=str,
+        default="messages",
+        help="Name for the column to store generated messages",
+    )
+    parser.add_argument(
+        "--dataset-column-name",
         type=str,
         default="messages",
         help="Name for the column to store generated messages",
@@ -332,6 +339,7 @@ if __name__ == "__main__":
         dataset_name=args.dataset_name,
         dataset_split=args.dataset_split,
         gen_column_name=args.gen_column_name,
+        dataset_column_name=args.dataset_column_name,
         to_generate_tokens=args.to_generate_tokens,
         batch_size=args.batch_size,
         max_length=args.max_length,
